@@ -1,12 +1,35 @@
-# React + Vite
+# Sistema de Agendamentos
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Um sistema de agendamento online completo, projetado para modernizar a gestão de horários em barbearias, otimizando o tempo dos profissionais e oferecendo conveniência máxima para os clientes.
 
-Currently, two official plugins are available:
+# 🚀 Funcionalidades
+O sistema possui duas visões principais, cada uma com funcionalidades específicas para atender às necessidades de seus usuários.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+# Para Clientes
+✅ Agendamento 24/7: Marque um horário a qualquer hora e de qualquer lugar.
 
-## Expanding the ESLint configuration
+📅 Visualização de Horários: Veja em tempo real os horários disponíveis por profissional e serviço.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+🔔 Lembretes Automáticos: Receba notificações para não esquecer seu agendamento. (Funcionalidade futura)
+
+👤 Painel Pessoal: Gerencie seus agendamentos futuros e visualize seu histórico.
+
+# Para a Barbearia
+🖥️ Painel de Controle: Tenha uma visão geral de todos os agendamentos em um calendário interativo.
+
+✂️ Gestão de Serviços: Cadastre, edite e remova serviços, definindo preços e duração.
+
+⏰ Gestão de Expediente: Configure os dias e horários de trabalho de forma flexível.
+
+📊 Relatórios Simples: Obtenha insights sobre os serviços mais populares e horários de pico. (Funcionalidade futura)
+
+# 🛠️ Stack de Tecnologia
+Este projeto foi construído com tecnologias modernas, focando em performance e uma excelente experiência de desenvolvimento.
+
+Front-end: React (com Vite)
+
+Back-end e Banco de Dados: Supabase (PostgreSQL, Autenticação, APIs)
+
+Roteamento: React Router DOM
+
+Estilização: CSS Modules / Bootstrap

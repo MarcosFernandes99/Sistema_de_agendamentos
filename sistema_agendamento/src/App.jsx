@@ -1,6 +1,5 @@
 // src/App.jsx
 import { useAuth } from './contexts/AuthContext';
-import GerenciarServicos from './pages/GerenciarServicos';
 import Login from './pages/Login';
 import Registro from './pages/Registro';
 
@@ -24,7 +23,6 @@ function App() {
       <hr />
       <Login />
       <hr/>
-      <GerenciarServicos/>
     </div>
   );
 }

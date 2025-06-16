@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { supabase } from '../supabase';
-// Supondo que você está usando react-router-dom para navegação
 import { useNavigate } from 'react-router-dom'; 
 
 function Login() {
@@ -8,7 +7,7 @@ function Login() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const navigate = useNavigate(); // Hook para redirecionar o usuário
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -21,16 +20,11 @@ function Login() {
         password: password,
       });
 
-      // 1. Verificamos o erro primeiro (boa prática)
       if (error) {
         throw error;
-      }
+      }      
       
-      // 2. AGORA USAMOS A VARIÁVEL 'data' para confirmar o sucesso!
-      // Se o login foi bem-sucedido, data.user conterá as informações do usuário.
       if (data.user) {
-        // Redireciona o usuário para o painel principal após o login.
-        // O AuthProvider que criamos antes irá detectar a mudança e atualizar a UI.
         navigate('/dashboard'); 
       }
 

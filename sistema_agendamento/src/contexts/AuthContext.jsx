@@ -9,7 +9,7 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Pega a sessão atual se ela existir
+
     const getSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setUser(session?.user ?? null);
@@ -18,7 +18,7 @@ export function AuthProvider({ children }) {
 
     getSession();
 
-    // Escuta por mudanças no estado de autenticação
+    
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setUser(session?.user ?? null);
@@ -26,7 +26,7 @@ export function AuthProvider({ children }) {
       }
     );
 
-    // Limpa o listener quando o componente é desmontado
+    
     return () => {
       authListener.subscription.unsubscribe();
     };

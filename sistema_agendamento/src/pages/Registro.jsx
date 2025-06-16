@@ -1,6 +1,6 @@
 // src/pages/Registro.jsx
 import { useState } from 'react';
-import { supabase } from '../supabase'; // Importe seu cliente Supabase configurado
+import { supabase } from '../supabase';
 
 function Registro() {
   const [email, setEmail] = useState('');
@@ -9,26 +9,23 @@ function Registro() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
 
-  // Função executada quando o formulário é enviado
-  const handleRegister = async (e) => {
-    e.preventDefault(); // Impede o recarregamento da página
+    const handleRegister = async (e) => {
+    e.preventDefault(); 
     setError(null);
     setSuccess(false);
     setLoading(true);
 
     try {
-      // Usa a função signUp do Supabase Auth
       const { data, error } = await supabase.auth.signUp({
         email: email,
         password: password,
       });
 
       if (error) {
-        throw error; // Joga o erro para o bloco catch
+        throw error;
       }
       
-      // Por padrão, o Supabase envia um e-mail de confirmação.
-      // Você pode desabilitar isso nas configurações do seu projeto Supabase para facilitar os testes.
+      
       if (data) {
         setSuccess(true);
         setEmail('');

@@ -1,29 +1,36 @@
 // src/App.jsx
-import { useAuth } from './contexts/AuthContext';
-import Login from './pages/Login';
-import Registro from './pages/Registro';
+
+import React from 'react';
+// 1. Importe os componentes de roteamento
+import { Routes, Route } from 'react-router-dom';
+
+// 2. Importe TODAS as suas páginas
+import LoginPage from './pages/Login'; // Supondo que você renomeou Login.jsx para LoginPage.jsx
+import RegistroPage from './pages/Registro'; // E Registro.jsx para RegistroPage.jsx
+import AgendamentoPage from './pages/AgendamentoPage';
+import MeusAgendamentosPage from './pages/MeusAgendamentos';
+import Dashboard from './pages/Dashboard';
+// import NotFoundPage from './pages/NotFoundPage'; // Uma página para URLs que não existem
 
 function App() {
-  const { user, signOut } = useAuth();
-
-  if (user) {
-    return (
-      <div>
-        <h1>Bem-vindo, {user.email}!</h1>
-        <button onClick={signOut}>Sair</button>
-        {/* Aqui você renderizaria o painel principal da aplicação */}
-      </div>
-    );
-  }
-
   return (
-    <div>
-      <h1>Bem-vindo ao Sistema de Agendamento</h1>
-      <Registro />
-      <hr />
-      <Login />
-      <hr/>
-    </div>
+    // O Routes é o gerenciador que olha para a URL e escolhe uma rota da lista[4, 5]
+    <Routes>
+      {/* Rotas Públicas */}
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/registro" element={<RegistroPage />} /> {/* <-- AQUI ESTÁ ELA! */}
+      
+      {/* Rotas Privadas (que deveriam ser protegidas) */}
+      <Route path="/agendar" element={<AgendamentoPage />} />
+      <Route path="/meus-agendamentos" element={<MeusAgendamentosPage />} />
+      <Route path="/dashboard" element={<Dashboard />} />
+      
+      {/* Rota para a página inicial (ex: redireciona para o login) */}
+      <Route path="/" element={<LoginPage />} />
+      
+      {/* Rota "Pega-Tudo" para URLs não encontradas */}
+      {/* <Route path="*" element={<NotFoundPage />} /> */}
+    </Routes>
   );
 }
 

@@ -62,3 +62,59 @@ export const createAgendamento = async (agendamentoData) => {
 
   return novoAgendamento;
 };
+
+export const getAgendamentosPorCliente = async (clienteId) => {
+  const { data, error } = await supabase
+    .from('agendamentos')
+    .select(`
+      id,
+      data_hora_inicio,
+      status,
+      servicos ( nome, preco ) 
+    `)
+    // O filtro crucial: onde a coluna 'cliente_id' for igual ao ID que passamos.
+    .eq('cliente_id', clienteId)
+    // Ordena os resultados para mostrar os mais recentes primeiro.
+    .order('data_hora_inicio', { ascending: false });
+
+  if (error) {
+    console.error('Erro ao buscar agendamentos do cliente:', error.message);
+    throw new Error('Não foi possível buscar seus agendamentos.');
+  }
+
+  return data;
+};
+
+export const getAgendamentosPorDia = async (data) => {
+  // data deve ser um objeto Date de JavaScript
+
+  // Calcula o início do dia (00:00:00)
+  const inicioDoDia = new Date(data);
+  inicioDoDia.setHours(0, 0, 0, 0);
+
+  // Calcula o fim do dia (23:59:59)
+  const fimDoDia = new Date(data);
+  fimDoDia.setHours(23, 59, 59, 999);
+
+  const { data: agendamentos, error } = await supabase
+    .from('agendamentos')
+    .select(`
+      id,
+      data_hora_inicio,
+      status,
+      servicos ( nome, duracao_minutos ),
+      usuarios ( nome, email )
+    `)
+    // Onde 'data_hora_inicio' for maior ou igual (gte) ao início do dia
+    .gte('data_hora_inicio', inicioDoDia.toISOString())
+    // E onde 'data_hora_inicio' for menor ou igual (lte) ao fim do dia
+    .lte('data_hora_inicio', fimDoDia.toISOString())
+    .order('data_hora_inicio', { ascending: true }); // Ordena por hora, do mais cedo para o mais tarde
+
+  if (error) {
+    console.error('Erro ao buscar agendamentos do dia:', error.message);
+    throw new Error('Não foi possível buscar a agenda do dia.');
+  }
+
+  return agendamentos;
+};

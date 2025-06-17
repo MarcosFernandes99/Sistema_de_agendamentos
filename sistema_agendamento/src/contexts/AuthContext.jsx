@@ -1,4 +1,3 @@
-// src/contexts/AuthContext.jsx
 import { createContext, useState, useEffect, useContext } from 'react';
 import { supabase } from '../supabase';
 

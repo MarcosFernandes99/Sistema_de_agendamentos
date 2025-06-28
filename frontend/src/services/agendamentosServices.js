@@ -59,7 +59,7 @@ export const getAgendamentosPorDia = async (data) => {
       data_hora_inicio,
       status,
       servicos ( nome, duracao_minutos ),
-      usuarios ( nome, email )
+      profiles ( nome, email )
     `)
     // Onde 'data_hora_inicio' for maior ou igual (gte) ao início do dia
     .gte('data_hora_inicio', inicioDoDia.toISOString())

@@ -16,9 +16,13 @@ export const createServico = async (servicoData) => {
 };
 
 export const getServicos = async () => {
-  const { data, error } = await supabase
+    const { data, error } = await supabase
     .from('servicos')
-    .select('*');
+    .select('*')
+    // MELHORIA: Só busca serviços que estão marcados como ativos.
+    .eq('ativo', true) 
+    // MELHORIA: Retorna a lista ordenada por nome para uma UI mais consistente.
+    .order('nome', { ascending: true });
 
   if (error) {
     console.error('Erro ao buscar serviços:', error.message);
@@ -44,15 +48,15 @@ export const updateServico = async (servicoId, novosDados) => {
   return data;
 };
 
-export const deleteServico = async (servicoId) => {
-  const { error } = await supabase
+export const deactivateServico = async (servicoId) => {
+   const { error } = await supabase
     .from('servicos')
-    .delete()
+    .update({ ativo: false }) // A MUDANÇA-CHAVE: Apenas marca como inativo.
     .eq('id', servicoId);
 
   if (error) {
-    console.error('Erro ao deletar serviço:', error.message);
-    throw new Error('Não foi possível deletar o serviço.');
+    console.error('Erro ao desativar serviço:', error.message);
+    throw new Error('Não foi possível desativar o serviço.');
   }
 
   return true;

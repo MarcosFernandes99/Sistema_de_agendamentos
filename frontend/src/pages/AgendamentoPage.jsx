@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { getServicos } from '../services/servicosServices';
 // NOVO: Importamos a função que busca horários da nossa Edge Function
-import { agendamentosService } from '../services/agendamentosServices';
+import { agendamentosServices } from '../services/agendamentosServices';
 
 // NOVO: Importamos o componente de calendário e o CSS padrão
 import { DayPicker } from 'react-day-picker';
@@ -47,7 +47,7 @@ function AgendamentoPage() {
       // Formata a data para "YYYY-MM-DD"
       const dataFormatada = dataSelecionada.toISOString().split('T')[0];
       
-      agendamentosService.getHorariosDisponiveis(dataFormatada, servicoSelecionado)
+      agendamentosServices.getHorariosDisponiveis(dataFormatada, servicoSelecionado)
         .then(horarios => {
           setHorariosDisponiveis(horarios);
         })

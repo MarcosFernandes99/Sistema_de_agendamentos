@@ -1,6 +1,5 @@
 // src/App.jsx
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
-
 // Importe APENAS as páginas que você vai usar nas rotas
 import LoginPage from './pages/Login';
 import RegistroPage from './pages/Registro';
@@ -12,8 +11,8 @@ import ProtectedRoute from './pages/ProtectedRoute';
 
 function App() {
   return (
-    <BrowserRouter>
-      {/* ... (seu menu de navegação) ... */}
+   
+     <div>
       <nav>
         <Link to="/">Login</Link> | <Link to="/registro">Registro</Link> | <Link to="/dashboard">Dashboard</Link>
       </nav>
@@ -28,7 +27,7 @@ function App() {
         <Route path="/meus-agendamentos" element={<ProtectedRoute><MeusAgendamentosPage /></ProtectedRoute>} />
         <Route path="/admin/servicos" element={<ProtectedRoute><GerenciarServicosPage /></ProtectedRoute>} />
       </Routes>
-    </BrowserRouter>
+    </div>
   );
 }
 

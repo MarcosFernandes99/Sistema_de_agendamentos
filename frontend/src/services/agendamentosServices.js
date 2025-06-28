@@ -74,3 +74,9 @@ export const getAgendamentosPorDia = async (data) => {
 
   return agendamentos;
 };
+
+export const agendamentosServices = {
+  createAgendamento,
+  getAgendamentosPorCliente,
+  getAgendamentosPorDia
+}

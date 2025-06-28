@@ -1,64 +1,99 @@
+// frontend/src/pages/AgendamentoPage.jsx
+
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext'; // Para pegar o ID do cliente
-import { getServicos } from '../services/servicosServices'; // Para listar os serviços
-import { createAgendamento } from '../services/agendamentosServices'; // Nossa função principal!
+import { useAuth } from '../contexts/AuthContext';
+import { getServicos } from '../services/servicosServices';
+// NOVO: Importamos a função que busca horários da nossa Edge Function
+import { agendamentosService } from '../services/agendamentosServices';
+
+// NOVO: Importamos o componente de calendário e o CSS padrão
+import { DayPicker } from 'react-day-picker';
+import 'react-day-picker/dist/style.css';
 
 function AgendamentoPage() {
-  const { user } = useAuth(); // Pega o usuário logado do nosso AuthContext
+  const { user } = useAuth();
 
-  // --- Estados para controlar o formulário ---
+  // --- Estados do Formulário ---
   const [servicos, setServicos] = useState([]);
   const [servicoSelecionado, setServicoSelecionado] = useState('');
-  const [dataSelecionada, setDataSelecionada] = useState('');
-  // ... outros estados que você precisar (ex: para horário)
-
-  // --- Estados para feedback ao usuário ---
-  const [loading, setLoading] = useState(false);
+  const [dataSelecionada, setDataSelecionada] = useState(undefined); // ALTERADO: Começa indefinido
+  // NOVO: Estados para a lógica de horários
+  const [horariosDisponiveis, setHorariosDisponiveis] = useState([]);
+  const [horarioSelecionado, setHorarioSelecionado] = useState('');
+  
+  // --- Estados de Feedback ---
+  const [loadingServicos, setLoadingServicos] = useState(true);
+  const [loadingHorarios, setLoadingHorarios] = useState(false); // NOVO: Loading específico para os horários
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState('');
 
-  // Carrega a lista de serviços quando a página abre
+  // Efeito para carregar a lista de serviços
   useEffect(() => {
     getServicos()
       .then(data => setServicos(data))
-      .catch(err => setError('Não foi possível carregar os serviços.'));
+      .catch(err => setError('Não foi possível carregar os serviços.'))
+      .finally(() => setLoadingServicos(false));
   }, []);
 
-  // ESTA É A FUNÇÃO ONDE VOCÊ PRECISA INSERIR O CÓDIGO
+  // NOVO: Efeito para buscar os horários disponíveis sempre que a data ou o serviço mudar
+  useEffect(() => {
+    // Só busca se o usuário já selecionou um serviço E uma data
+    if (dataSelecionada && servicoSelecionado) {
+      setLoadingHorarios(true);
+      setError(null);
+      setHorariosDisponiveis([]);
+      setHorarioSelecionado('');
+
+      // Formata a data para "YYYY-MM-DD"
+      const dataFormatada = dataSelecionada.toISOString().split('T')[0];
+      
+      agendamentosService.getHorariosDisponiveis(dataFormatada, servicoSelecionado)
+        .then(horarios => {
+          setHorariosDisponiveis(horarios);
+        })
+        .catch(err => {
+          setError(err.message || "Não foi possível buscar os horários.");
+        })
+        .finally(() => {
+          setLoadingHorarios(false);
+        });
+    }
+  }, [dataSelecionada, servicoSelecionado]);
+
+
+  // ALTERADO: Função para confirmar o agendamento
   const handleConfirmarAgendamento = async () => {
-    // 1. Validação inicial (verificar se o usuário selecionou tudo)
-    if (!servicoSelecionado || !dataSelecionada) {
-      setError('Por favor, selecione um serviço e uma data.');
+    if (!servicoSelecionado || !dataSelecionada || !horarioSelecionado) {
+      setError('Por favor, selecione um serviço, uma data e um horário.');
       return;
     }
 
-    setLoading(true);
+    // Combina a data selecionada com o horário selecionado
+    const [horas, minutos] = horarioSelecionado.split(':');
+    const dataHoraFinal = new Date(dataSelecionada);
+    dataHoraFinal.setHours(horas, minutos, 0, 0);
+
     setError(null);
     setSuccess('');
 
-    // 2. O Bloco try...catch entra em ação!
     try {
-      // Tenta criar o agendamento chamando nossa função de serviço
-      const novoAgendamento = await createAgendamento({
+      // Chama a função RPC 'agendar_horario' que criamos
+      const novoAgendamento = await agendamentosService.createAgendamento({
         cliente_id: user.id,
         servico_id: servicoSelecionado,
-        data_hora_inicio: dataSelecionada, // Adapte para seu seletor de horário
+        data_hora_inicio: dataHoraFinal.toISOString(),
       });
       
-      // Se chegou aqui, deu tudo certo!
-      setSuccess(`Agendamento confirmado com sucesso para o dia ${new Date(novoAgendamento.data_hora_inicio).toLocaleDateString()}!`);
-      // Opcional: Limpar os campos após o sucesso
-      setServicoSelecionado('');
-      setDataSelecionada('');
+      const dataConfirmada = new Date(novoAgendamento.data_hora_inicio);
+      
+      setSuccess(`Agendamento #${novoAgendamento.id} confirmado para ${dataConfirmada.toLocaleString()}!`);
+      // Limpa os campos
+      setDataSelecionada(undefined);
+      setHorarioSelecionado('');
+      setHorariosDisponiveis([]);
 
     } catch (err) {
-      // Se a função createAgendamento "jogou" um erro, nós o pegamos aqui
-      // e mostramos a mensagem de erro para o usuário.
       setError(err.message);
-
-    } finally {
-      // Garante que o estado de "carregando" seja sempre desativado
-      setLoading(false);
     }
   };
 
@@ -66,22 +101,44 @@ function AgendamentoPage() {
     <div>
       <h1>Faça seu Agendamento</h1>
       
-      {/* Seletor de Serviço */}
-      <select value={servicoSelecionado} onChange={(e) => setServicoSelecionado(e.target.value)}>
+      {/* 1. Seletor de Serviço */}
+      <select value={servicoSelecionado} onChange={(e) => setServicoSelecionado(e.target.value)} disabled={loadingServicos}>
         <option value="">Selecione um serviço</option>
         {servicos.map(servico => (
-          <option key={servico.id} value={servico.id}>
-            {servico.nome}
-          </option>
+          <option key={servico.id} value={servico.id}>{servico.nome}</option>
         ))}
       </select>
 
-      {/* Seletor de Data */}
-      <input type="datetime-local" value={dataSelecionada} onChange={(e) => setDataSelecionada(e.target.value)} />
+      {/* 2. Seletor de Data (Calendário) */}
+      <div style={{ marginTop: '20px' }}>
+        <DayPicker
+          mode="single"
+          selected={dataSelecionada}
+          onSelect={setDataSelecionada}
+          fromDate={new Date()} // Impede que o usuário selecione datas passadas
+        />
+      </div>
+
+      {/* 3. Seção de Horários Disponíveis */}
+      {loadingHorarios && <p>Buscando horários...</p>}
+      {!loadingHorarios && horariosDisponiveis.length > 0 && (
+        <div>
+          <h3>Selecione um horário:</h3>
+          {horariosDisponiveis.map(horario => (
+            <button 
+              key={horario} 
+              onClick={() => setHorarioSelecionado(horario)}
+              style={{ fontWeight: horario === horarioSelecionado ? 'bold' : 'normal', margin: '5px' }}
+            >
+              {horario}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Botão para confirmar */}
-      <button onClick={handleConfirmarAgendamento} disabled={loading}>
-        {loading ? 'Confirmando...' : 'Confirmar Agendamento'}
+      <button onClick={handleConfirmarAgendamento} style={{ marginTop: '20px' }}>
+        Confirmar Agendamento
       </button>
 
       {/* Área para mostrar as mensagens de feedback */}

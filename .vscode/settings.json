@@ -1,0 +1,17 @@
+{
+  // 1. Liga a extensão Deno para este projeto
+  "deno.enable": true,
+
+  // 2. Diz à extensão para SÓ ATUAR na pasta `supabase`.
+  // Isso impede que ela interfira com seu projeto React.
+  "deno.enablePaths": [
+    "./supabase"
+  ],
+
+  // 3. AQUI ESTÁ A CORREÇÃO:
+  // Define o formatador do Deno como padrão, MAS SOMENTE
+  // para arquivos TypeScript.
+  "[typescript]": {
+    "editor.defaultFormatter": "denoland.vscode-deno"
+  }
+}

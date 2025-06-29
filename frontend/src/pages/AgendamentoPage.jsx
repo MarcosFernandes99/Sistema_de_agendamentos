@@ -46,6 +46,8 @@ function AgendamentoPage() {
 
       // Formata a data para "YYYY-MM-DD"
       const dataFormatada = dataSelecionada.toISOString().split('T')[0];
+
+      // const servicoIdNumerico = parseInt(servicoSelecionado, 10);
       
       agendamentosServices.getHorariosDisponiveis(dataFormatada, servicoSelecionado)
         .then(horarios => {
@@ -78,7 +80,7 @@ function AgendamentoPage() {
 
     try {
       // Chama a função RPC 'agendar_horario' que criamos
-      const novoAgendamento = await agendamentosService.createAgendamento({
+      const novoAgendamento = await agendamentosServices.createAgendamento({
         cliente_id: user.id,
         servico_id: servicoSelecionado,
         data_hora_inicio: dataHoraFinal.toISOString(),

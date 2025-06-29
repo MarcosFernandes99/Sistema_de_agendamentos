@@ -1,75 +1,75 @@
-// supabase/functions/get-horarios-disponiveis/index.ts
+// CÓDIGO ORIGINAL RESTAURADO
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'npm:@supabase/supabase-js@2'
 
-// Define o formato esperado dos dados recebidos
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
 interface RequestPayload {
-  data: string; // Formato: "YYYY-MM-DD"
+  data: string;
   servicoId: number;
 }
 
 serve(async (req) => {
-  // Configuração para permitir chamadas do seu app front-end (CORS)
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type' } })
+    return new Response('ok', { headers: corsHeaders })
   }
 
   try {
     const payload: RequestPayload = await req.json();
     const { data: dataSelecionada, servicoId } = payload;
     
-    if (!dataSelecionada || !servicoId) throw new Error("Data e ID do serviço são obrigatórios.");
-
-    // Inicializa o cliente Supabase com permissões de administrador
+    if (!dataSelecionada || !servicoId) {
+      throw new Error("A data e o ID do serviço são obrigatórios.");
+    }
+    
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Busca os agendamentos já feitos para o dia e a duração do serviço selecionado
     const { data: agendamentosExistentes, error: agendamentosError } = await supabaseAdmin
-      .from('Agendamentos')
-      .select('data_hora')
-      .like('data_hora', `${dataSelecionada}%`);
+      .from('agendamentos')
+      .select('data_hora_inicio')
+      .gte('data_hora_inicio', `${dataSelecionada}T00:00:00.000Z`) // Maior ou igual ao início do dia
+      .lte('data_hora_inicio', `${dataSelecionada}T23:59:59.999Z`); // Menor ou igual ao fim do dia
 
     const { data: servico, error: servicoError } = await supabaseAdmin
-      .from('Servicos')
+      .from('servicos')
       .select('duracao_minutos')
       .eq('id', servicoId)
-      .single();
+      .maybeSingle(); // Usando a versão mais segura
 
     if (agendamentosError || servicoError) throw agendamentosError || servicoError;
-    if (!servico) throw new Error("Serviço não encontrado.");
+    if (!servico) throw new Error(`Serviço com ID ${servicoId} não encontrado.`);
 
-    // Lógica para gerar e filtrar os horários
-    const horarioInicio = 9;  // 9:00
-    const horarioFim = 18;    // 18:00
+    // ... resto da sua lógica para calcular horários ...
+    const horarioInicio = 9;
+    const horarioFim = 18;
     const intervalo = servico.duracao_minutos;
-
     const horariosDisponiveis = [];
-    const horariosOcupados = new Set(agendamentosExistentes.map(a => new Date(a.data_hora).getTime()));
+    const horariosOcupados = new Set(agendamentosExistentes.map(a => new Date(a.data_hora_inicio).getTime()));
 
     for (let hora = horarioInicio; hora < horarioFim; hora++) {
       for (let minuto = 0; minuto < 60; minuto += intervalo) {
         const dataSlot = new Date(`${dataSelecionada}T${String(hora).padStart(2, '0')}:${String(minuto).padStart(2, '0')}:00`);
         
-        // Verifica se o horário ainda não passou e se não está ocupado
         if (dataSlot.getTime() > new Date().getTime() && !horariosOcupados.has(dataSlot.getTime())) {
           horariosDisponiveis.push(dataSlot.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
         }
       }
     }
     
-    // Retorna a lista de horários livres
     return new Response(
       JSON.stringify({ horarios: horariosDisponiveis }),
-      { headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } },
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), {
       status: 400,
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   }
 })
-

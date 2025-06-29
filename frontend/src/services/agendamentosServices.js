@@ -1,5 +1,20 @@
 import { supabase } from '../supabase';
 
+async function getHorariosDisponiveis(data, servicoId) {
+  const { data: result, error } = await supabase.functions.invoke('get-horarios-disponiveis', {
+    body: { data, servicoId },
+  });
+
+  if (error) {
+    console.error("Erro no serviço ao buscar horários:", error);
+    throw new Error(error.message);
+  }
+
+  // A nossa Edge Function retorna { horarios: [...] }, então pegamos essa propriedade
+  return result.horarios;
+}
+
+
 export const createAgendamento = async (agendamentoData) => {
   const { cliente_id, servico_id, data_hora_inicio } = agendamentoData;
 
@@ -78,5 +93,6 @@ export const getAgendamentosPorDia = async (data) => {
 export const agendamentosServices = {
   createAgendamento,
   getAgendamentosPorCliente,
-  getAgendamentosPorDia
+  getAgendamentosPorDia,
+  getHorariosDisponiveis
 }

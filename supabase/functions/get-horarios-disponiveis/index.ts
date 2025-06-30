@@ -9,7 +9,7 @@ const corsHeaders = {
 
 interface RequestPayload {
   data: string;
-  servicoId: number;
+  servicoId: string;
 }
 
 serve(async (req) => {
@@ -34,7 +34,8 @@ serve(async (req) => {
       .from('agendamentos')
       .select('data_hora_inicio')
       .gte('data_hora_inicio', `${dataSelecionada}T00:00:00.000Z`) // Maior ou igual ao início do dia
-      .lte('data_hora_inicio', `${dataSelecionada}T23:59:59.999Z`); // Menor ou igual ao fim do dia
+      .lte('data_hora_inicio', `${dataSelecionada}T23:59:59.999Z`) // Menor ou igual ao fim do dia
+      .eq('status', 'confirmado');
 
     const { data: servico, error: servicoError } = await supabaseAdmin
       .from('servicos')

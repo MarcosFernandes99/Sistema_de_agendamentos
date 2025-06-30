@@ -34,6 +34,21 @@ export const createAgendamento = async (agendamentoData) => {
   return novoAgendamento;
 };
 
+async function cancelarAgendamento(agendamentoId) {
+  const { data, error } = await supabase
+    .from('agendamentos')
+    .update({ status: 'cancelado' }) // Altera o status para 'cancelado'.
+    .eq('id', agendamentoId) // Onde o ID do agendamento corresponder.
+    .select('*, servicos(*)') // Retorna o agendamento atualizado.
+    .single(); // Esperamos que apenas um registro seja atualizado.
+
+  if (error) {
+    console.error("Erro ao cancelar agendamento:", error);
+    throw new Error('Não foi possível cancelar o agendamento.');
+  }
+  return data;
+}
+
 export const getAgendamentosPorCliente = async (clienteId) => {
   const { data, error } = await supabase
     .from('agendamentos')
@@ -94,5 +109,6 @@ export const agendamentosServices = {
   createAgendamento,
   getAgendamentosPorCliente,
   getAgendamentosPorDia,
-  getHorariosDisponiveis
+  getHorariosDisponiveis,
+  cancelarAgendamento
 }

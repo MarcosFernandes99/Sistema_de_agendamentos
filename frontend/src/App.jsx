@@ -17,6 +17,7 @@ function App() {
       <nav style={{ padding: '10px', background: '#f0f0f0', marginBottom: '20px' }}>
         {/* <Link to="/" style={{ marginRight: '10px' }}>Login</Link> */}
         {/* <Link to="/registro" style={{ marginRight: '10px' }}>Registro</Link> */}
+        <Link to="/" style={{ marginRight: '10px' }}>Início</Link>
         <Link to="/agendar" style={{ marginRight: '10px' }}>Fazer Agendamento</Link>
         <Link to="/meus-agendamentos" style={{ marginRight: '10px' }}>Meus Agendamentos</Link>
         <Link to="/dashboard" style={{ marginRight: '10px' }}>Dashboard (Admin)</Link>

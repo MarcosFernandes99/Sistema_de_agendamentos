@@ -1,6 +1,6 @@
 // frontend/src/pages/AgendamentoPage.jsx
-
-import React, { useState, useEffect } from 'react';
+import { supabase } from '../supabase'; // Adicione esta linha
+import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { getServicos } from '../services/servicosServices';
 // NOVO: Importamos a função que busca horários da nossa Edge Function
@@ -64,40 +64,53 @@ function AgendamentoPage() {
 
 
   // ALTERADO: Função para confirmar o agendamento
-  const handleConfirmarAgendamento = async () => {
-    if (!servicoSelecionado || !dataSelecionada || !horarioSelecionado) {
-      setError('Por favor, selecione um serviço, uma data e um horário.');
-      return;
+const handleConfirmarAgendamento = async () => {
+  if (!servicoSelecionado || !dataSelecionada || !horarioSelecionado) {
+    setError('Por favor, selecione um serviço, uma data e um horário.');
+    return;
+  }
+
+  setError(null);
+  setSuccess('');
+
+  try {
+    // Passo 1: Verificar se o usuário está autenticado
+    let currentUser = user;
+    
+    // Se não estiver autenticado, cria um usuário anônimo
+    if (!currentUser) {
+      const { data: { user: anonymousUser }, error: authError } = 
+        await supabase.auth.signInAnonymously();
+      
+      if (authError) throw new Error("Falha ao criar sessão anônima");
+      currentUser = anonymousUser;
     }
 
-    // Combina a data selecionada com o horário selecionado
+    // Combina data e horário
     const [horas, minutos] = horarioSelecionado.split(':');
     const dataHoraFinal = new Date(dataSelecionada);
     dataHoraFinal.setHours(horas, minutos, 0, 0);
 
-    setError(null);
-    setSuccess('');
+    // Passo 2: Cria o agendamento
+    const novoAgendamento = await agendamentosServices.createAgendamento({
+      cliente_id: currentUser.id, // Usa ID do usuário atual (autenticado ou anônimo)
+      servico_id: servicoSelecionado,
+      data_hora_inicio: dataHoraFinal.toISOString(),
+    });
 
-    try {
-      // Chama a função RPC 'agendar_horario' que criamos
-      const novoAgendamento = await agendamentosServices.createAgendamento({
-        cliente_id: user.id,
-        servico_id: servicoSelecionado,
-        data_hora_inicio: dataHoraFinal.toISOString(),
-      });
-      
-      const dataConfirmada = new Date(novoAgendamento.data_hora_inicio);
-      
-      setSuccess(`Agendamento #${novoAgendamento.id} confirmado para ${dataConfirmada.toLocaleString()}!`);
-      // Limpa os campos
-      setDataSelecionada(undefined);
-      setHorarioSelecionado('');
-      setHorariosDisponiveis([]);
+    const dataConfirmada = new Date(novoAgendamento.data_hora_inicio);
+    setSuccess(`Agendamento #${novoAgendamento.id} confirmado para ${dataConfirmada.toLocaleString()}!`);
+    
+    // Limpa os campos
+    setDataSelecionada(undefined);
+    setHorarioSelecionado('');
+    setHorariosDisponiveis([]);
 
-    } catch (err) {
-      setError(err.message);
-    }
-  };
+  } catch (err) {
+    setError(err.message);
+  }
+};
+
 
   return (
     <div>
